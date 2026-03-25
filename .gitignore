@@ -1,0 +1,7 @@
+node_modules/
+server/node_modules/
+.DS_Store
+dist/
+dist-ssr/
+*.local
+deepseek_html_*.html
