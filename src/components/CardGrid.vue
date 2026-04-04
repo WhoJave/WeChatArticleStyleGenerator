@@ -145,6 +145,17 @@ async function handleDownload(idx, styleId) {
 .card-preview {
   padding: 1.2rem;
   background: #ffffff;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* Customize scrollbar for preview */
+.card-preview::-webkit-scrollbar {
+  width: 6px;
+}
+.card-preview::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
 }
 
 .card-footer {
