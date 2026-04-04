@@ -1,13 +1,12 @@
 <template>
   <div class="card-grid-wrapper">
-    <!-- Toolbar above the grid -->
+    <!-- Toolbar -->
     <div class="grid-toolbar container">
       <div class="toolbar-left">
         <span class="toolbar-label">◈ 全部风格</span>
-        <span class="toolbar-hint">预览比例</span>
         <div class="ratio-presets">
           <button
-            v-for="preset in ratioPresets"
+            v-for="preset in presets"
             :key="preset.label"
             class="ratio-btn"
             :class="{ active: activePreset === preset.label }"
@@ -16,30 +15,33 @@
         </div>
       </div>
       <div class="toolbar-right">
-        <span class="slider-label">高度</span>
-        <input
-          type="range"
-          min="120"
-          max="700"
-          step="10"
-          v-model.number="previewHeight"
-          class="height-slider"
-          @input="activePreset = '自定义'"
-        />
-        <span class="slider-value">{{ previewHeight }}px</span>
+        <div class="slider-group">
+          <span class="slider-icon">↔</span>
+          <span class="slider-label">宽度</span>
+          <input type="range" min="250" max="700" step="10" v-model.number="cardWidth" class="toolbar-slider" @input="activePreset = '自定义'" />
+          <span class="slider-value">{{ cardWidth }}px</span>
+        </div>
+        <div class="slider-group">
+          <span class="slider-icon">🔍</span>
+          <span class="slider-label">缩放</span>
+          <input type="range" min="30" max="100" step="5" v-model.number="scalePercent" class="toolbar-slider" @input="activePreset = '自定义'" />
+          <span class="slider-value">{{ scalePercent }}%</span>
+        </div>
       </div>
     </div>
 
-    <!-- Card grid -->
-    <div class="cards-grid">
+    <!-- Grid -->
+    <div class="cards-grid" :style="gridStyle">
       <div
         v-for="(style, idx) in styles"
         :key="style.id"
         class="card-item"
         @click="$emit('select', idx)"
       >
-        <div class="card-preview" :style="{ height: previewHeight + 'px' }">
-          <div class="card-preview-inner" v-html="style.render(articleData)" :ref="el => setPreviewRef(el, style.id)"></div>
+        <div class="card-preview">
+          <div class="card-preview-scaler" :style="scalerStyle">
+            <div v-html="style.render(articleData)" :ref="el => setPreviewRef(el, style.id)"></div>
+          </div>
         </div>
         <div class="card-footer">
           <span class="card-name">
@@ -71,7 +73,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, computed } from 'vue'
 
 const props = defineProps({
   styles: { type: Array, required: true },
@@ -84,33 +86,41 @@ const copyStatuses = reactive({})
 const downloadStatuses = reactive({})
 const cardPreviews = ref({})
 
-// Aspect ratio / height control
-const previewHeight = ref(300)
-const activePreset = ref('3:4')
+// ── Layout controls ──
+const cardWidth = ref(380)
+const scalePercent = ref(60)
+const activePreset = ref('默认')
 
-const ratioPresets = [
-  { label: '自适应', height: null },
-  { label: '1:1', ratio: 1 },
-  { label: '3:4', ratio: 4 / 3 },
-  { label: '4:3', ratio: 3 / 4 },
-  { label: '16:9', ratio: 9 / 16 },
+const presets = [
+  { label: '大图', width: 600, scale: 80 },
+  { label: '默认', width: 380, scale: 60 },
+  { label: '紧凑', width: 300, scale: 45 },
+  { label: '缩略', width: 250, scale: 35 },
 ]
 
 function applyPreset(preset) {
   activePreset.value = preset.label
-  if (preset.height !== undefined && preset.height === null) {
-    // auto — use a comfortable default
-    previewHeight.value = 300
-    return
-  }
-  // We target a card width of approximately 380px (grid minmax)
-  const cardWidth = 356 // 380px - 2*12px padding
-  previewHeight.value = Math.round(cardWidth * preset.ratio)
+  cardWidth.value = preset.width
+  scalePercent.value = preset.scale
 }
 
-// Init with 3:4
-applyPreset(ratioPresets[2])
+// Init
+applyPreset(presets[1])
 
+const gridStyle = computed(() => ({
+  gridTemplateColumns: `repeat(auto-fill, minmax(${cardWidth.value}px, 1fr))`,
+}))
+
+const scalerStyle = computed(() => {
+  const s = scalePercent.value / 100
+  return {
+    transform: `scale(${s})`,
+    transformOrigin: 'top left',
+    width: `${100 / s}%`,
+  }
+})
+
+// ── Card logic ──
 function setPreviewRef(el, id) {
   if (el) cardPreviews.value[id] = el
 }
@@ -186,7 +196,7 @@ async function handleDownload(idx, styleId) {
 .toolbar-right {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 1.2rem;
 }
 
 .toolbar-label {
@@ -195,13 +205,6 @@ async function handleDownload(idx, styleId) {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 600;
-  white-space: nowrap;
-}
-
-.toolbar-hint {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  opacity: 0.6;
   white-space: nowrap;
 }
 
@@ -235,14 +238,25 @@ async function handleDownload(idx, styleId) {
   color: #000;
 }
 
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.slider-icon {
+  font-size: 0.8rem;
+}
+
 .slider-label {
   font-size: 0.72rem;
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
-.height-slider {
+.toolbar-slider {
   -webkit-appearance: none;
-  width: 120px;
+  width: 100px;
   height: 4px;
   border-radius: 2px;
   background: var(--border);
@@ -250,7 +264,7 @@ async function handleDownload(idx, styleId) {
   cursor: pointer;
 }
 
-.height-slider::-webkit-slider-thumb {
+.toolbar-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 14px;
   height: 14px;
@@ -260,7 +274,7 @@ async function handleDownload(idx, styleId) {
   transition: transform var(--transition);
 }
 
-.height-slider::-webkit-slider-thumb:hover {
+.toolbar-slider::-webkit-slider-thumb:hover {
   transform: scale(1.2);
 }
 
@@ -268,6 +282,7 @@ async function handleDownload(idx, styleId) {
   font-size: 0.72rem;
   color: var(--text-secondary);
   min-width: 42px;
+  text-align: right;
 }
 
 /* ── Grid ── */
@@ -276,7 +291,6 @@ async function handleDownload(idx, styleId) {
   margin: 0 auto;
   padding: 0 2rem 3rem;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 1.2rem;
 }
 
@@ -303,20 +317,18 @@ async function handleDownload(idx, styleId) {
   border-color: var(--border-light);
 }
 
-/* ── Preview box with fixed height ── */
+/* ── Preview with scale ── */
 .card-preview {
-  overflow: hidden;
   background: #ffffff;
+  overflow: hidden;
   position: relative;
-  /* height is bound via :style */
 }
 
-.card-preview-inner {
-  width: 100%;
-  /* scale down large content to fit without scroll */
-  transform-origin: top left;
+.card-preview-scaler {
+  /* transform & width are bound via :style */
 }
 
+/* ── Footer ── */
 .card-footer {
   display: flex;
   justify-content: space-between;
@@ -399,8 +411,8 @@ async function handleDownload(idx, styleId) {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 768px) {
-  .cards-grid { grid-template-columns: 1fr; padding: 0 1rem 2rem; }
-  .height-slider { width: 80px; }
-  .toolbar-hint { display: none; }
+  .cards-grid { grid-template-columns: 1fr !important; padding: 0 1rem 2rem; }
+  .toolbar-slider { width: 70px; }
+  .grid-toolbar { flex-direction: column; align-items: flex-start; }
 }
 </style>
