@@ -202,4 +202,12 @@ async function exportImage() {
   flex-direction: column;
   justify-content: center;
 }
+
+:deep(.preview-content > * > div) {
+  flex: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 </style>

@@ -385,6 +385,14 @@ async function handleDownload(idx, styleId) {
   justify-content: center;
 }
 
+:deep(.card-inner-content > * > div) {
+  flex: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 /* ── Footer ── */
 .card-footer {
   display: flex;
