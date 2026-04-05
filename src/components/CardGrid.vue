@@ -80,7 +80,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed } from 'vue'
+import { reactive, ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
 const props = defineProps({
   styles: { type: Array, required: true },
@@ -146,8 +146,42 @@ const scalerStyle = computed(() => {
 })
 
 // ── Card logic ──
+let ro = null
+
+onMounted(() => {
+  ro = new ResizeObserver((entries) => {
+    const s = scalePercent.value / 100
+    for (const entry of entries) {
+      if (!entry.target || !entry.target.parentElement) continue
+      const previewBox = entry.target.parentElement.parentElement
+      if (previewBox && previewBox.classList.contains('card-preview')) {
+        previewBox.style.height = `${entry.target.offsetHeight * s}px`
+      }
+    }
+  })
+})
+
+onUnmounted(() => {
+  if (ro) ro.disconnect()
+})
+
+watch(scalePercent, (newVal) => {
+  const s = newVal / 100
+  Object.values(cardPreviews.value).forEach(el => {
+    if (!el || !el.parentElement) return
+    const previewBox = el.parentElement.parentElement
+    if (previewBox && previewBox.classList.contains('card-preview')) {
+      previewBox.style.height = `${el.offsetHeight * s}px`
+    }
+  })
+})
+
 function setPreviewRef(el, id) {
-  if (el) cardPreviews.value[id] = el
+  if (el && cardPreviews.value[id] !== el) {
+    if (ro && cardPreviews.value[id]) ro.unobserve(cardPreviews.value[id])
+    cardPreviews.value[id] = el
+    if (ro) ro.observe(el)
+  }
 }
 
 function getCopyText(styleId) {
