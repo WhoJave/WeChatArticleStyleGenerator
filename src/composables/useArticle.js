@@ -9,7 +9,7 @@ export function useArticle() {
   const article = reactive({
     title: '秋日私语',
     subtitle: '秋风起，万物收',
-    author: '林清玄',
+    author: 'FreeStyler',
     date: getTodayFormatted(),
     tag: '散文 · 秋日',
     type: 'article',
@@ -28,7 +28,7 @@ export function useArticle() {
     return {
       title: article.title || '标题',
       subtitle: article.subtitle || '',
-      author: article.author || '作者',
+      author: article.author || 'FreeStyler',
       date: article.date || getTodayFormatted(),
       tag: article.tag || '标签',
       body: article.body || '内容',
