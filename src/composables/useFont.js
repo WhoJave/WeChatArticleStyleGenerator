@@ -9,6 +9,8 @@ export const FONTS = [
   { id: 'qingke',   name: '青柯黄游', family: "'ZCOOL QingKe HuangYou', cursive",             preview: '秋日私语' },
   { id: 'zhimang',  name: '钟芒行书', family: "'Zhi Mang Xing', cursive",                      preview: '秋日私語' },
   { id: 'liujian',  name: '流江毛草', family: "'Liu Jian Mao Cao', cursive",                   preview: '秋日私語' },
+  { id: 'yidianyan',name: '一点颜体', family: "'I.Ngaan', cursive",                            preview: '秋日私語' },
+  { id: 'yrdzst',   name: '杨任东竹石体', family: "'YRDZST', sans-serif",                        preview: '秋日私语' },
 ]
 
 const currentFontId = ref('noto-sans')
