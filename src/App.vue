@@ -87,7 +87,7 @@ provide('toast', toast)
 // Replace hard-coded font-family in rendered HTML with the selected font
 function applyFont(html) {
   const f = currentFont.value.family
-  return html.replace(/font-family:[^;"'{}]+/gi, `font-family:${f}`)
+  return html.replace(/font-family:[^;"]+/gi, `font-family:${f}`)
 }
 
 const currentPreviewHtml = computed(() => {
@@ -111,7 +111,8 @@ function handleCardSelect(filteredIdx) {
 
 async function handleCardCopy(filteredIdx) {
   const style = filteredStyles.value[filteredIdx]
-  const html = style.render(getArticleData())
+  const rawHtml = style.render(getArticleData())
+  const html = applyFont(rawHtml)
   const ok = await clipboard.copyHtml(html, `card-${style.id}`)
   showToast(ok ? `已复制「${style.name}」风格` : '复制失败，请手动选择')
 }

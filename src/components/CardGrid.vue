@@ -87,7 +87,7 @@ const emit = defineEmits(['copy', 'select', 'toast'])
 function renderWithFont(style) {
   const html = style.render(props.articleData)
   if (!props.fontFamily) return html
-  return html.replace(/font-family:[^;"'{}]+/gi, `font-family:${props.fontFamily}`)
+  return html.replace(/font-family:[^;"]+/gi, `font-family:${props.fontFamily}`)
 }
 
 const copyStatuses = reactive({})
