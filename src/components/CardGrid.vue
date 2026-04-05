@@ -4,6 +4,13 @@
     <div class="grid-toolbar container">
       <div class="toolbar-left">
         <span class="toolbar-label">◈ 全部风格</span>
+        <select v-model="aspectRatio" class="aspect-select">
+          <option value="auto">自适应</option>
+          <option value="1/1">1:1</option>
+          <option value="3/4">3:4</option>
+          <option value="4/3">4:3</option>
+          <option value="16/9">16:9</option>
+        </select>
         <div class="ratio-presets">
           <button
             v-for="preset in presets"
@@ -40,7 +47,7 @@
       >
         <div class="card-preview">
           <div class="card-preview-scaler" :style="scalerStyle">
-            <div v-html="renderWithFont(style)" :ref="el => setPreviewRef(el, style.id)"></div>
+            <div class="card-inner-content" :style="frameStyle" v-html="renderWithFont(style)" :ref="el => setPreviewRef(el, style.id)"></div>
           </div>
         </div>
         <div class="card-footer">
@@ -82,6 +89,16 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['copy', 'select', 'toast'])
+
+import { useLayout } from '../composables/useLayout.js'
+const { aspectRatio } = useLayout()
+
+const frameStyle = computed(() => {
+  if (aspectRatio.value === 'auto') return {}
+  return {
+    aspectRatio: aspectRatio.value,
+  }
+})
 
 // Replace hard-coded font-family in render output with the selected font
 function renderWithFont(style) {
@@ -216,6 +233,24 @@ async function handleDownload(idx, styleId) {
   white-space: nowrap;
 }
 
+.aspect-select {
+  padding: 0.28rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  outline: none;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.aspect-select:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .ratio-presets {
   display: flex;
   gap: 0.35rem;
@@ -336,6 +371,18 @@ async function handleDownload(idx, styleId) {
 .card-preview-scaler {
   /* transform & width are bound via :style binding */
   display: block;
+}
+
+.card-inner-content {
+  width: 100%;
+}
+
+:deep(.card-inner-content > *) {
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 /* ── Footer ── */

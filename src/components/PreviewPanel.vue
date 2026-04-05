@@ -31,6 +31,7 @@
 
 <script setup>
 import { ref, computed, inject } from 'vue'
+import { useLayout } from '../composables/useLayout.js'
 
 const props = defineProps({
   html: { type: String, default: '' },
@@ -39,7 +40,7 @@ const props = defineProps({
 
 const exportPreview = ref(null)
 const exporting = ref(false)
-const aspectRatio = ref('auto')
+const { aspectRatio } = useLayout()
 const toast = inject('toast')
 
 const frameStyle = computed(() => {
