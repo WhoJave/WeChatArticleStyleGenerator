@@ -45,10 +45,8 @@
         class="card-item"
         @click="$emit('select', idx)"
       >
-        <div class="card-preview">
-          <div class="card-preview-scaler" :style="scalerStyle">
-            <div class="card-inner-content" :style="frameStyle" v-html="renderWithFont(style)" :ref="el => setPreviewRef(el, style.id)"></div>
-          </div>
+        <div class="card-preview" :style="frameStyle">
+          <div class="card-inner-content" :style="scalerStyle" v-html="renderWithFont(style)" :ref="el => setPreviewRef(el, style.id)"></div>
         </div>
         <div class="card-footer">
           <span class="card-name">
@@ -80,7 +78,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { reactive, ref, computed } from 'vue'
 
 const props = defineProps({
   styles: { type: Array, required: true },
@@ -139,49 +137,13 @@ const gridStyle = computed(() => ({
 const scalerStyle = computed(() => {
   const s = scalePercent.value / 100
   return {
-    transform: `scale(${s})`,
-    transformOrigin: 'top left',
-    width: `${100 / s}%`,
+    zoom: s,
   }
 })
 
 // ── Card logic ──
-let ro = null
-
-onMounted(() => {
-  ro = new ResizeObserver((entries) => {
-    const s = scalePercent.value / 100
-    for (const entry of entries) {
-      if (!entry.target || !entry.target.parentElement) continue
-      const previewBox = entry.target.parentElement.parentElement
-      if (previewBox && previewBox.classList.contains('card-preview')) {
-        previewBox.style.height = `${entry.target.offsetHeight * s}px`
-      }
-    }
-  })
-})
-
-onUnmounted(() => {
-  if (ro) ro.disconnect()
-})
-
-watch(scalePercent, (newVal) => {
-  const s = newVal / 100
-  Object.values(cardPreviews.value).forEach(el => {
-    if (!el || !el.parentElement) return
-    const previewBox = el.parentElement.parentElement
-    if (previewBox && previewBox.classList.contains('card-preview')) {
-      previewBox.style.height = `${el.offsetHeight * s}px`
-    }
-  })
-})
-
 function setPreviewRef(el, id) {
-  if (el && cardPreviews.value[id] !== el) {
-    if (ro && cardPreviews.value[id]) ro.unobserve(cardPreviews.value[id])
-    cardPreviews.value[id] = el
-    if (ro) ro.observe(el)
-  }
+  if (el) cardPreviews.value[id] = el
 }
 
 function getCopyText(styleId) {
@@ -395,36 +357,15 @@ async function handleDownload(idx, styleId) {
   border-color: var(--border-light);
 }
 
-/* ── Preview with scale ── */
+/* ── Preview with zoom ── */
 .card-preview {
   background: #ffffff;
   overflow: hidden;
   position: relative;
 }
 
-.card-preview-scaler {
-  /* transform & width are bound via :style binding */
-  display: block;
-}
-
 .card-inner-content {
   width: 100%;
-}
-
-:deep(.card-inner-content > *) {
-  height: 100%;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-:deep(.card-inner-content > * > div) {
-  flex: 1;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
 
 /* ── Footer ── */
