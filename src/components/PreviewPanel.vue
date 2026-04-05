@@ -21,8 +21,8 @@
         </div>
       </div>
       <div class="preview-box">
-        <div class="export-frame" ref="exportPreview" :style="frameStyle">
-          <div v-html="html" class="preview-content"></div>
+        <div class="export-frame" ref="exportPreview">
+          <div v-html="html" class="preview-content" :style="frameStyle"></div>
         </div>
       </div>
     </div>
@@ -192,5 +192,13 @@ async function exportImage() {
 
 .preview-content {
   width: 100%;
+}
+
+:deep(.preview-content > *) {
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 </style>
