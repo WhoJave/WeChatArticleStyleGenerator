@@ -1,11 +1,16 @@
 import { ref, reactive } from 'vue'
 
+const getTodayFormatted = () => {
+  const d = new Date()
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
+}
+
 export function useArticle() {
   const article = reactive({
     title: '秋日私语',
     subtitle: '秋风起，万物收',
     author: '林清玄',
-    date: '2024.10.15',
+    date: getTodayFormatted(),
     tag: '散文 · 秋日',
     type: 'article',
     body: '秋风起，白云飞，草木黄落，雁南归。秋天的风，带着一丝凉意，却也带来无尽的思绪。在这个收获的季节里，一切都变得安静而深邃。风穿过林间，叶子沙沙作响，仿佛在低语着季节的秘密。',
@@ -24,7 +29,7 @@ export function useArticle() {
       title: article.title || '标题',
       subtitle: article.subtitle || '',
       author: article.author || '作者',
-      date: article.date || '2024.01.01',
+      date: article.date || getTodayFormatted(),
       tag: article.tag || '标签',
       body: article.body || '内容',
       type: article.type || 'article',
