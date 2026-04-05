@@ -40,7 +40,7 @@
       >
         <div class="card-preview">
           <div class="card-preview-scaler" :style="scalerStyle">
-            <div v-html="style.render(articleData)" :ref="el => setPreviewRef(el, style.id)"></div>
+            <div v-html="renderWithFont(style)" :ref="el => setPreviewRef(el, style.id)"></div>
           </div>
         </div>
         <div class="card-footer">
@@ -78,9 +78,17 @@ import { reactive, ref, computed } from 'vue'
 const props = defineProps({
   styles: { type: Array, required: true },
   articleData: { type: Object, required: true },
+  fontFamily: { type: String, default: '' },
 })
 
 const emit = defineEmits(['copy', 'select', 'toast'])
+
+// Replace hard-coded font-family in render output with the selected font
+function renderWithFont(style) {
+  const html = style.render(props.articleData)
+  if (!props.fontFamily) return html
+  return html.replace(/font-family:[^;"'{}]+/gi, `font-family:${props.fontFamily}`)
+}
 
 const copyStatuses = reactive({})
 const downloadStatuses = reactive({})
@@ -256,6 +264,7 @@ async function handleDownload(idx, styleId) {
 
 .toolbar-slider {
   -webkit-appearance: none;
+  appearance: none;
   width: 100px;
   height: 4px;
   border-radius: 2px;
@@ -325,7 +334,8 @@ async function handleDownload(idx, styleId) {
 }
 
 .card-preview-scaler {
-  /* transform & width are bound via :style */
+  /* transform & width are bound via :style binding */
+  display: block;
 }
 
 /* ── Footer ── */

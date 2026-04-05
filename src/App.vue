@@ -46,6 +46,7 @@
       <CardGrid
         :styles="filteredStyles"
         :articleData="getArticleData()"
+        :fontFamily="currentFont.family"
         @copy="handleCardCopy"
         @select="handleCardSelect"
         @toast="showToast"
@@ -83,14 +84,20 @@ const currentFont = computed(() => getCurrentFont())
 provide('clipboard', clipboard)
 provide('toast', toast)
 
+// Replace hard-coded font-family in rendered HTML with the selected font
+function applyFont(html) {
+  const f = currentFont.value.family
+  return html.replace(/font-family:[^;"'{}]+/gi, `font-family:${f}`)
+}
+
 const currentPreviewHtml = computed(() => {
   if (!currentStyle.value) return ''
-  return currentStyle.value.render(getArticleData())
+  return applyFont(currentStyle.value.render(getArticleData()))
 })
 
 const allStylesHtml = computed(() => {
   const data = getArticleData()
-  return STYLES.map(s => s.render(data)).join('\n\n<!-- 风格分割 -->\n\n')
+  return STYLES.map(s => applyFont(s.render(data))).join('\n\n<!-- 风格分割 -->\n\n')
 })
 
 function handleStyleSelect(idx) {
