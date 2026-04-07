@@ -47,13 +47,24 @@
         <span>同步后将出现在公众号后台「草稿箱」中，内容中的图片必须通过微信接口上传。</span>
       </div>
 
+      <div v-if="isStatic" class="static-notice">
+        <div class="note warning">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span>此功能需要 Node.js 后端支持。在 GitHub Pages (静态网页) 环境下，无法直接同步。请从本地运行以使用此功能。</span>
+        </div>
+      </div>
+
       <button
         class="sync-btn"
-        :disabled="syncing || !config.appId || !config.appSecret"
+        :disabled="syncing || !config.appId || !config.appSecret || isStatic"
         @click="syncDraft"
       >
         <span v-if="syncing" class="spinner"></span>
-        {{ syncing ? '同步中...' : '同步到草稿箱' }}
+        {{ syncing ? '同步中...' : (isStatic ? '需本地运行' : '同步到草稿箱') }}
       </button>
     </div>
   </div>
@@ -62,7 +73,6 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import axios from 'axios'
-
 const props = defineProps({
   article: { type: Object, required: true },
   currentStyle: { type: Object, default: null },
@@ -72,6 +82,7 @@ const props = defineProps({
 const emit = defineEmits(['toast', 'close'])
 
 const syncing = ref(false)
+const isStatic = import.meta.env.PROD
 
 const config = reactive({
   appId: '',
@@ -209,12 +220,6 @@ async function syncDraft() {
   margin-bottom: 0.2rem;
 }
 
-.info-value {
-  font-size: 0.85rem;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
 .note {
   display: flex;
   align-items: flex-start;
@@ -229,10 +234,20 @@ async function syncDraft() {
   line-height: 1.5;
 }
 
+.note.warning {
+  background: rgba(255, 36, 66, 0.08);
+  border-color: rgba(255, 36, 66, 0.2);
+  color: #ff2442;
+}
+
 .note svg {
   flex-shrink: 0;
   margin-top: 1px;
   color: #ffc107;
+}
+
+.note.warning svg {
+  color: #ff2442;
 }
 
 .sync-btn {
